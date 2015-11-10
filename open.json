@@ -1,0 +1,10 @@
+{
+  "type": "action",
+  "payload": {
+    "identifier": "SERIAL_OPEN",
+    "data": {
+      "port": "/dev/tty.usbserial-AH02LTLV",
+      "baud": 115200
+    }
+  }
+}

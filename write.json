@@ -1,0 +1,10 @@
+{
+  "type": "action",
+  "payload": {
+    "identifier": "SERIAL_WRITE",
+    "data": {
+      "port": "/dev/tty.usbserial-AH02LTLV",
+      "data": "bA0K"
+    }
+  }
+}
