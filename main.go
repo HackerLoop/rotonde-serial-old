@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/HackerLoop/rotonde-client.go"
 	"github.com/HackerLoop/rotonde/shared"
@@ -53,7 +54,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			}
 	}()
 
-	conf := &serial.Config{Name: name, Baud: baud}
+	conf := &serial.Config{Name: name, Baud: baud, ReadTimeout: time.Second * 1}
 	s, err := serial.OpenPort(conf)
 	if err != nil {
 		c.sendError(name, err)
@@ -110,7 +111,11 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 				return
 			}
 			if isStopped() {
+				s.Close()
 				return
+			}
+			if n == 0 {
+				continue
 			}
 			log.Info("Received ", base64.StdEncoding.EncodeToString(buf[:n]))
 			c.SendEvent("SERIAL_READ", rotonde.Object{
