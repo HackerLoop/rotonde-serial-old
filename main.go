@@ -34,7 +34,7 @@ func (c *Client) sendSuccess(port string) {
 
 func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 	endChan = make(chan bool)
-	var stop, isStopped = func() (func(), func() bool) {
+	var stop, end, isStopped = func() (func(), func(), func() bool) {
 		stopChan := make(chan bool)
 		isStoppedChan := make(chan bool)
 		go func() {
@@ -48,6 +48,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 		}()
 		return func() {
 				stopChan <- true
+			}, func() {
 				endChan <- true
 			}, func() bool {
 				return <-isStoppedChan
@@ -58,7 +59,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 	s, err := serial.OpenPort(conf)
 	if err != nil {
 		c.sendError(name, err)
-		go stop()
+		go func() { stop(); end() }()
 		return
 	}
 
@@ -69,7 +70,6 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			return !isStopped()
 		}
 
-		s.Close()
 		stop()
 		c.sendSuccess(name)
 		return !isStopped()
@@ -112,6 +112,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			}
 			if isStopped() {
 				s.Close()
+				end()
 				return
 			}
 			if n == 0 {
