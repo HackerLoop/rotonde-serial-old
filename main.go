@@ -113,7 +113,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			n, err := s.Read(buf)
 			readMutex.Unlock()
 			if err != nil && fmt.Sprintf("%s", err) != "EOF" {
-				c.sendError(name, err)
+				//c.sendError(name, err)
 				return
 			}
 			if isStopped() {
