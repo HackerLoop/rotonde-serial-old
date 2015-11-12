@@ -34,7 +34,7 @@ func (c *Client) sendSuccess(port string) {
 
 func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 	endChan = make(chan bool)
-	var stop, end, isStopped = func() (func(), func(), func() bool) {
+	var stop, isStopped = func() (func(), func() bool) {
 		stopChan := make(chan bool)
 		isStoppedChan := make(chan bool)
 		go func() {
@@ -48,18 +48,19 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 		}()
 		return func() {
 				stopChan <- true
-			}, func() {
 				endChan <- true
 			}, func() bool {
 				return <-isStoppedChan
 			}
 	}()
 
+	var readMutex = new(sync.Mutex)
+
 	conf := &serial.Config{Name: name, Baud: baud, ReadTimeout: time.Second * 1}
 	s, err := serial.OpenPort(conf)
 	if err != nil {
 		c.sendError(name, err)
-		go func() { stop(); end() }()
+		go stop()
 		return
 	}
 
@@ -70,6 +71,9 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			return !isStopped()
 		}
 
+		readMutex.Lock()
+		s.Close()
+		readMutex.Unlock()
 		stop()
 		c.sendSuccess(name)
 		return !isStopped()
@@ -105,14 +109,14 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 	go func() {
 		buf := make([]byte, 100)
 		for {
+			readMutex.Lock()
 			n, err := s.Read(buf)
-			if err != nil {
+			readMutex.Unlock()
+			if err != nil && fmt.Sprintf("%s", err) != "EOF" {
 				c.sendError(name, err)
 				return
 			}
 			if isStopped() {
-				s.Close()
-				end()
 				return
 			}
 			if n == 0 {
