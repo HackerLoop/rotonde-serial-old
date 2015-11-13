@@ -60,6 +60,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 	s, err := serial.OpenPort(conf)
 	if err != nil {
 		c.sendError(name, err)
+		log.Warning(err)
 		go stop()
 		return
 	}
@@ -71,10 +72,10 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			return !isStopped()
 		}
 
+		stop()
 		readMutex.Lock()
 		s.Close()
 		readMutex.Unlock()
-		stop()
 		c.sendSuccess(name)
 		return !isStopped()
 	})
@@ -93,6 +94,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 		buf, err := base64.StdEncoding.DecodeString(action.Data["data"].(string))
 		if err != nil {
 			c.sendError(name, err)
+			log.Warning(err)
 			return !isStopped()
 		}
 		log.Info(string(buf))
@@ -100,6 +102,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 		_, err = s.Write(buf)
 		if err != nil {
 			c.sendError(name, err)
+			log.Warning(err)
 			return !isStopped()
 		}
 		c.sendSuccess(name)
@@ -114,6 +117,7 @@ func (c *Client) startPort(name string, baud int) (endChan chan bool) {
 			readMutex.Unlock()
 			if err != nil && fmt.Sprintf("%s", err) != "EOF" {
 				//c.sendError(name, err)
+				log.Warning(err)
 				return
 			}
 			if isStopped() {
