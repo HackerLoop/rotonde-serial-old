@@ -143,26 +143,26 @@ func main() {
 	c := &Client{*client.NewClient("ws://rotonde:4224/")}
 	log.Info("connected.")
 
-	open_action := &rotonde.Definition{"SERIAL_OPEN", "action", rotonde.FieldDefinitions{}}
+	open_action := &rotonde.Definition{"SERIAL_OPEN", "action", false, rotonde.FieldDefinitions{}}
 	open_action.PushField("port", "string", "")
 	open_action.PushField("baud", "number", "baud")
 	c.AddLocalDefinition(open_action)
 
-	close_action := &rotonde.Definition{"SERIAL_CLOSE", "action", rotonde.FieldDefinitions{}}
+	close_action := &rotonde.Definition{"SERIAL_CLOSE", "action", false, rotonde.FieldDefinitions{}}
 	close_action.PushField("port", "string", "")
 	c.AddLocalDefinition(close_action)
 
-	write_action := &rotonde.Definition{"SERIAL_WRITE", "action", rotonde.FieldDefinitions{}}
+	write_action := &rotonde.Definition{"SERIAL_WRITE", "action", false, rotonde.FieldDefinitions{}}
 	write_action.PushField("port", "string", "")
 	write_action.PushField("data", "string", "")
 	c.AddLocalDefinition(write_action)
 
-	status_event := &rotonde.Definition{"SERIAL_STATUS", "event", rotonde.FieldDefinitions{}}
+	status_event := &rotonde.Definition{"SERIAL_STATUS", "event", false, rotonde.FieldDefinitions{}}
 	status_event.PushField("port", "string", "")
 	status_event.PushField("status", "string", "")
 	c.AddLocalDefinition(status_event)
 
-	read_event := &rotonde.Definition{"SERIAL_READ", "event", rotonde.FieldDefinitions{}}
+	read_event := &rotonde.Definition{"SERIAL_READ", "event", false, rotonde.FieldDefinitions{}}
 	read_event.PushField("port", "string", "")
 	read_event.PushField("data", "string", "")
 	c.AddLocalDefinition(read_event)
